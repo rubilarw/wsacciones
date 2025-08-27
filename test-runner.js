@@ -60,7 +60,12 @@ emitter.run = function() {
         // remove comments
         var body = test.body.replace(/\/\/.*\n|\/\*.*\*\//g, '');
         // collapse spaces
+        body = body.replace(/\s+/g,' ');
+        var obj = {
           title: test.title,
+          context: context.slice(0, -separator.length),
+          state: test.state,
+          // body: body,
           assertions: analyser(body)
         };
         tests.push(obj);
@@ -74,6 +79,9 @@ emitter.run = function() {
 
     })
     .on('suite end', function(s) {
+      context = context.slice(0, -(s.title.length + separator.length))
+    })
+  } catch(e) {
     throw(e);
   }
 };
@@ -95,4 +103,4 @@ module.exports = emitter;
  *   - `pass`  (test) test passed
  *   - `fail`  (test, err) test failed
  *   - `pending`  (test) test pending
- */      
+ */
