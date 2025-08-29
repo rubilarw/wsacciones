@@ -19,55 +19,53 @@ module.exports = function (app) {
       price: data.latestPrice
     };
   }
- 
+ app.get('/api/stock-prices', async (req, res) => {
+  const { stock, like } = req.query;
+  const ip = req.ip;
 
-  app.get('/api/stock-prices', async function (req, res) {
-    try {
-      let { stock, like } = req.query;
-      const ip = getClientIP(req);
-      like = like === 'true';
+  const fetchStockData = async (symbol) => {
+    const response = await fetch(`https://stock-price-checker-proxy.freecodecamp.rocks/v1/stock/${symbol}/quote`);
+    const data = await response.json();
+    return { stock: data.symbol, price: data.latestPrice };
+  };
 
-      if (Array.isArray(stock)) {
-        const [stock1, stock2] = stock.map(s => s.toUpperCase());
-        const [data1, data2] = await Promise.all([
-          fetchStock(stock1),
-          fetchStock(stock2)
-        ]);
+  const updateLikes = async (symbol) => {
+    const doc = await Stock.findOne({ stock: symbol }) || new Stock({ stock: symbol, likes: [] });
+    if (like === 'true' && !doc.likes.includes(ip)) {
+      doc.likes.push(ip);
+      await doc.save();
+    }
+    return doc.likes.length;
+  };
 
-        if (like) {
-          likesDB[stock1] = likesDB[stock1] || new Set();
-          likesDB[stock2] = likesDB[stock2] || new Set();
-          likesDB[stock1].add(ip);
-          likesDB[stock2].add(ip);
-        }
+  if (Array.isArray(stock)) {
+    const [stock1, stock2] = stock;
 
-        const likes1 = likesDB[stock1] ? likesDB[stock1].size : 0;
-        const likes2 = likesDB[stock2] ? likesDB[stock2].size : 0;
+    const [data1, data2] = await Promise.all([
+      fetchStockData(stock1),
+      fetchStockData(stock2)
+    ]);
 
-        res.json({
-          stockData: [
-            { stock: data1.stock, price: data1.price, rel_likes: likes1 - likes2 },
-            { stock: data2.stock, price: data2.price, rel_likes: likes2 - likes1 }
-          ]
-        });
-      } else {
-        stock = stock.toUpperCase();
-        const data = await fetchStock(stock);
+    const [likes1, likes2] = await Promise.all([
+      updateLikes(stock1),
+      updateLikes(stock2)
+    ]);
 
-        if (like) {
-          likesDB[stock] = likesDB[stock] || new Set();
-          likesDB[stock].add(ip);
-        }
+    res.json({
+      stockData: [
+        { ...data1, rel_likes: likes1 - likes2 },
+        { ...data2, rel_likes: likes2 - likes1 }
+      ]
+    });
+  } else {
+    const data = await fetchStockData(stock);
+    const likes = await updateLikes(stock);
 
-        const likes = likesDB[stock] ? likesDB[stock].size : 0;
-        console.log(typeof data.stock, typeof data.price, typeof likes)
-        res.json({
-          stockData: {
-            stock: String(data.stock),       // Asegura que sea cadena
-              price: Number(data.price),       // Asegura que sea número
-              likes: Number(likes)
-          }
-        });
+    res.json({
+      stockData: { ...data, likes }
+    });
+  }
+});
       }
     } catch (err) {
       res.status(500).json({ error: 'Error fetching stock data' });

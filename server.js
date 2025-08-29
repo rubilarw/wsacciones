@@ -16,6 +16,7 @@ app.use(helmet.contentSecurityPolicy({directives: {
     styleSrc: ["'self'"],
     objectSrc: ["'none'"],
 }}));
+app.use('/_api', express.static(__dirname + '/'));
 
 app.use('/public', express.static(process.cwd() + '/public'));
 

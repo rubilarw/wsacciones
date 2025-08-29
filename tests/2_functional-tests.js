@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 suite('Functional Tests', function () {
   let likesBefore = 0;
 
-  test('Viewing one stock: GET request to /api/stock-prices/', function (done) {
+ test('Viewing one stock: GET request to /api/stock-prices/', function (done) {
     chai.request(server)
       .get('/api/stock-prices')
       .query({ stock: 'GOOG' })
@@ -46,7 +46,7 @@ suite('Functional Tests', function () {
         assert.property(res.body, 'stockData');
         assert.equal(res.body.stockData.stock, 'GOOG');
         assert.isNumber(res.body.stockData.price);
-        assert.equal(res.body.stockData.likes, res.body.stockData.likes); // Should not increase
+        assert.equal(res.body.stockData.likes, res.body.stockData.likes); // no debe aumentar
         done();
       });
   });
@@ -54,4 +54,35 @@ suite('Functional Tests', function () {
   test('Viewing two stocks: GET request to /api/stock-prices/', function (done) {
     chai.request(server)
       .get('/api/stock-prices')
-      .query
+      .query({ stock: ['GOOG', 'MSFT'] })
+      .end(function (err, res) {
+        assert.equal(res.status, 200);
+        assert.isArray(res.body.stockData);
+        assert.equal(res.body.stockData.length, 2);
+        res.body.stockData.forEach(stock => {
+          assert.isString(stock.stock);
+          assert.isNumber(stock.price);
+          assert.isNumber(stock.rel_likes);
+        });
+        done();
+      });
+  });
+
+  test('Viewing two stocks with like: GET request to /api/stock-prices/', function (done) {
+    chai.request(server)
+      .get('/api/stock-prices')
+      .query({ stock: ['GOOG', 'MSFT'], like: true })
+      .end(function (err, res) {
+        assert.equal(res.status, 200);
+        assert.isArray(res.body.stockData);
+        assert.equal(res.body.stockData.length, 2);
+        res.body.stockData.forEach(stock => {
+          assert.isString(stock.stock);
+          assert.isNumber(stock.price);
+          assert.isNumber(stock.rel_likes);
+        });
+        done();
+      });
+  });
+});
+
