@@ -17,6 +17,7 @@ suite('Functional Tests', function () {
         likesBefore = res.body.stockData.likes;
         done();
       });
+});
 
  test('Viewing one stock: GET request to /api/stock-prices/', function (done) {
     chai.request(server)
@@ -28,7 +29,6 @@ suite('Functional Tests', function () {
         assert.equal(res.body.stockData.stock, 'GOOG');
         assert.isNumber(res.body.stockData.price);
         assert.isNumber(res.body.stockData.likes);
-        likesBefore = res.body.stockData.likes;
         done();
       });
   });
