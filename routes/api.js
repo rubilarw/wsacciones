@@ -5,9 +5,18 @@ module.exports = function (app) {
   const likesDB = {}; // { stock: Set of IPs }
 
 function getClientIP(req) {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    return ip.split(',')[0].trim(); // Anonimizado
+  const rawIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+  const ip = rawIP.split(',')[0].trim();
+
+  if (ip === '::1' || ip.startsWith('::ffff:127')) return '127.0.0.0';
+
+  const blocks = ip.split('.');
+  if (blocks.length === 4) {
+    return `${blocks[0]}.${blocks[1]}.${blocks[2]}.0`;
   }
+
+  return ip;
+}
 
   async function fetchStock(stock) {
   const url = `https://stock-price-checker-proxy.freecodecamp.rocks/v1/stock/${stock}/quote`;
