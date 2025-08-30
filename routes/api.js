@@ -37,9 +37,14 @@ module.exports = function (app) {
         if (like) {
           likesDB[stock1] = likesDB[stock1] || new Set();
           likesDB[stock2] = likesDB[stock2] || new Set();
+
+        if (!likesDB[stock1].has(ip)) {
           likesDB[stock1].add(ip);
+  }
+        if (!likesDB[stock2].has(ip)) {
           likesDB[stock2].add(ip);
-        }
+  }
+}
 
         const likes1 = likesDB[stock1] ? likesDB[stock1].size : 0;
         const likes2 = likesDB[stock2] ? likesDB[stock2].size : 0;
@@ -56,8 +61,10 @@ module.exports = function (app) {
 
         if (like) {
           likesDB[stock] = likesDB[stock] || new Set();
+        if (!likesDB[stock].has(ip)) {
           likesDB[stock].add(ip);
-        }
+  }
+}
 
         const likes = likesDB[stock] ? likesDB[stock].size : 0;
         console.log(typeof data.stock, typeof data.price, typeof likes)
