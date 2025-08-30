@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 module.exports = function (app) {
   const likesDB = {}; // { stock: Set of IPs }
 
-  function getClientIP(req) {
+function getClientIP(req) {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     return ip.split(',')[0].trim(); // Anonimizado
   }
