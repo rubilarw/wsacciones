@@ -46,7 +46,7 @@ suite('Functional Tests', function () {
         assert.property(res.body, 'stockData');
         assert.equal(res.body.stockData.stock, 'GOOG');
         assert.isNumber(res.body.stockData.price);
-        assert.equal(res.body.stockData.likes, res.body.stockData.likes); // no debe aumentar
+        assert.equal(res.body.stockData.likes, likesBefore); // ✅ comparación correcta
         done();
       });
   });
