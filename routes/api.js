@@ -8,13 +8,15 @@ function getClientIP(req) {
   const rawIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   const ip = rawIP.split(',')[0].trim();
 
-  if (ip === '::1' || ip.startsWith('::ffff:127')) return '127.0.0.0';
+  // Si la IP fue simulada manualmente, no la trunques
+  if (req.headers['x-forwarded-for']) return ip;
 
+  // Truncamiento solo para IPs reales
+  if (ip === '::1' || ip.startsWith('::ffff:127')) return '127.0.0.0';
   const blocks = ip.split('.');
   if (blocks.length === 4) {
     return `${blocks[0]}.${blocks[1]}.${blocks[2]}.0`;
   }
-
   return ip;
 }
 
