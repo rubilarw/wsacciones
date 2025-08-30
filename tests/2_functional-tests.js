@@ -5,8 +5,18 @@ const server = require('../server');
 
 chai.use(chaiHttp);
 
+
 suite('Functional Tests', function () {
   let likesBefore = 0;
+
+  suiteSetup(function (done) {
+    chai.request(server)
+      .get('/api/stock-prices')
+      .query({ stock: 'GOOG', like: true })
+      .end(function (err, res) {
+        likesBefore = res.body.stockData.likes;
+        done();
+      });
 
  test('Viewing one stock: GET request to /api/stock-prices/', function (done) {
     chai.request(server)
